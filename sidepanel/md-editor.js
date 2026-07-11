@@ -109,6 +109,39 @@ export function normalize(root) {
   }
 }
 
+/**
+ * Keep DOM rendering outside the browser's IME composition transaction.
+ * Replacing nodes while composition is active cancels Chinese/Japanese/Korean
+ * candidate input in Chromium.
+ */
+export function bindEditorLifecycle(root, onSettled) {
+  let composing = false;
+
+  const settle = () => {
+    normalize(root);
+    refreshStyles(root);
+    onSettled();
+  };
+
+  root.addEventListener("compositionstart", () => {
+    composing = true;
+  });
+  root.addEventListener("compositionend", () => {
+    composing = false;
+    settle();
+  });
+  root.addEventListener("input", (event) => {
+    if (composing || event.isComposing) return;
+    settle();
+  });
+
+  return {
+    isActive(event) {
+      return composing || event.isComposing || event.keyCode === 229;
+    },
+  };
+}
+
 export function refreshStyles(root) {
   const saved = captureSelection(root);
   let inFence = false;

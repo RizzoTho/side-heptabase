@@ -1,4 +1,4 @@
-import { normalize, refreshStyles, handleListEnter, getValue, setValue } from "./md-editor.js";
+import { bindEditorLifecycle, refreshStyles, handleListEnter, getValue, setValue } from "./md-editor.js";
 
 const editorView = document.getElementById("editor-view");
 const connectView = document.getElementById("connect-view");
@@ -70,11 +70,7 @@ function syncEditorState() {
   chrome.storage.session.set({ [DRAFT_KEY]: text });
 }
 
-editor.addEventListener("input", () => {
-  normalize(editor);
-  refreshStyles(editor);
-  syncEditorState();
-});
+const composition = bindEditorLifecycle(editor, syncEditorState);
 
 // paste as plain text; execCommand keeps caret placement and undo history
 editor.addEventListener("paste", (e) => {
@@ -190,6 +186,7 @@ async function connect() {
 saveBtn.addEventListener("click", save);
 connectBtn.addEventListener("click", connect);
 editor.addEventListener("keydown", (e) => {
+  if (composition.isActive(e)) return;
   if (handleListEnter(editor, e)) {
     refreshStyles(editor);
     syncEditorState();
