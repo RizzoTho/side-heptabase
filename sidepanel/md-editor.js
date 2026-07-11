@@ -153,7 +153,12 @@ export function bindEditorLifecycle(root, onSettled) {
     settle();
   });
   root.addEventListener("input", (event) => {
-    if (composing || event.isComposing) return;
+    if (composing || event.isComposing) {
+      // Updating an attribute is safe during composition; rebuilding the line
+      // DOM is not. Hide the placeholder as soon as the first IME text lands.
+      root.dataset.empty = String(root.textContent === "");
+      return;
+    }
     settle();
   });
 
