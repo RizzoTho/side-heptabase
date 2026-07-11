@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>Heptabase Clipper</title>
+  <link rel="stylesheet" href="panel.css" />
+</head>
+<body>
+  <header id="page-info">
+    <div id="page-title">…</div>
+    <div id="page-url"></div>
+  </header>
+
+  <main>
+    <textarea id="editor" placeholder="写点什么…（支持 Markdown）" spellcheck="false"></textarea>
+  </main>
+
+  <footer>
+    <div id="target-switch" role="radiogroup" aria-label="保存目标">
+      <label><input type="radio" name="target" value="card" checked /><span>笔记卡片</span></label>
+      <label><input type="radio" name="target" value="journal" /><span>今日 Journal</span></label>
+    </div>
+    <div class="actions">
+      <button id="save-btn">保存到 Heptabase</button>
+      <button id="connect-btn" hidden>连接 Heptabase</button>
+    </div>
+    <div id="status" role="status"></div>
+    <button id="disconnect-btn" class="link-btn" hidden>断开连接</button>
+  </footer>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

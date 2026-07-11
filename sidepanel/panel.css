@@ -1,0 +1,136 @@
+:root {
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --border: #e2e2e8;
+  --text-dim: #71717a;
+  --bg: #ffffff;
+  --text: #18181b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --border: #3f3f46;
+    --text-dim: #a1a1aa;
+    --bg: #1e1e22;
+    --text: #e4e4e7;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#page-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#page-url {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+#editor {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--bg);
+  color: var(--text);
+}
+
+footer {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#target-switch {
+  display: flex;
+  gap: 4px;
+}
+#target-switch label {
+  flex: 1;
+  cursor: pointer;
+}
+#target-switch input { display: none; }
+#target-switch span {
+  display: block;
+  text-align: center;
+  padding: 5px 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+#target-switch input:checked + span {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.actions { display: flex; }
+.actions button {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.actions button:hover { background: var(--accent-hover); }
+.actions button:disabled { opacity: 0.5; cursor: default; }
+
+#status {
+  min-height: 18px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+#status.error { color: #dc2626; }
+#status.success { color: #16a34a; }
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+}
