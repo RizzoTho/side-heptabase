@@ -1,4 +1,4 @@
-import { normalize, refreshStyles, getValue, setValue } from "./md-editor.js";
+import { normalize, refreshStyles, handleListEnter, getValue, setValue } from "./md-editor.js";
 
 const editorView = document.getElementById("editor-view");
 const connectView = document.getElementById("connect-view");
@@ -190,6 +190,11 @@ async function connect() {
 saveBtn.addEventListener("click", save);
 connectBtn.addEventListener("click", connect);
 editor.addEventListener("keydown", (e) => {
+  if (handleListEnter(editor, e)) {
+    refreshStyles(editor);
+    syncEditorState();
+    return;
+  }
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") save();
 });
 
