@@ -45,10 +45,17 @@ function pointAtTextOffset(line, requestedOffset) {
     ? line.firstElementChild
     : null;
 
-  // Keep the caret out of collapsed syntax. A caret logically at the end of a
-  // prefix belongs immediately after its span, ready for visible input.
-  if (syntax && offset <= syntax.textContent.length) {
-    return [line, 1];
+  // Keep the caret inside a real editable container after collapsed syntax.
+  // Chrome cannot reliably type at a bare element boundary after a zero-width
+  // non-editable span, especially when the heading has no visible text yet.
+  if (syntax) {
+    const content = line.querySelector(":scope > .md-content");
+    const visibleOffset = Math.max(0, offset - syntax.textContent.length);
+    const text = content?.firstChild;
+    if (text?.nodeType === Node.TEXT_NODE) {
+      return [text, Math.min(visibleOffset, text.data.length)];
+    }
+    if (content) return [content, 0];
   }
 
   let consumed = 0;
@@ -85,12 +92,22 @@ function renderLine(line, text, cls, prefix) {
   if (prefix) {
     const syntax = document.createElement("span");
     syntax.className = "md-syntax";
+    syntax.contentEditable = "false";
     syntax.textContent = prefix;
     line.appendChild(syntax);
   }
   const visibleText = text.slice(prefix.length);
-  if (visibleText) line.appendChild(document.createTextNode(visibleText));
-  else if (!prefix) line.appendChild(document.createElement("br"));
+  if (prefix) {
+    const content = document.createElement("span");
+    content.className = "md-content";
+    if (visibleText) content.textContent = visibleText;
+    else content.appendChild(document.createElement("br"));
+    line.appendChild(content);
+  } else if (visibleText) {
+    line.appendChild(document.createTextNode(visibleText));
+  } else {
+    line.appendChild(document.createElement("br"));
+  }
 }
 
 /** Chrome can type the first character of an empty editor as a bare text node. */
