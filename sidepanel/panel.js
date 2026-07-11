@@ -1,3 +1,5 @@
+import { normalize, refreshStyles, getValue, setValue } from "./md-editor.js";
+
 const editorView = document.getElementById("editor-view");
 const connectView = document.getElementById("connect-view");
 const editor = document.getElementById("editor");
@@ -6,7 +8,6 @@ const sourceTitleEl = document.getElementById("source-title");
 const tabButtons = [...document.querySelectorAll("#tabs .tab")];
 const saveBtn = document.getElementById("save-btn");
 const connectBtn = document.getElementById("connect-btn");
-const disconnectBtn = document.getElementById("disconnect-btn");
 const statusEl = document.getElementById("status");
 const connectStatusEl = document.getElementById("connect-status");
 
@@ -56,22 +57,47 @@ for (const btn of tabButtons) {
   btn.addEventListener("click", () => setTarget(btn.dataset.target));
 }
 
-// ---- draft persistence ----
+// ---- editor ----
 
-function syncSaveBtn() {
-  saveBtn.disabled = editor.value.trim() === "";
+function editorText() {
+  return getValue(editor);
+}
+
+function syncEditorState() {
+  const text = editorText();
+  saveBtn.disabled = text.trim() === "";
+  editor.dataset.empty = String(text === "");
+  chrome.storage.session.set({ [DRAFT_KEY]: text });
 }
 
 editor.addEventListener("input", () => {
-  chrome.storage.session.set({ [DRAFT_KEY]: editor.value });
-  syncSaveBtn();
+  normalize(editor);
+  refreshStyles(editor);
+  syncEditorState();
 });
+
+// paste as plain text; execCommand keeps caret placement and undo history
+editor.addEventListener("paste", (e) => {
+  e.preventDefault();
+  const text = e.clipboardData.getData("text/plain");
+  document.execCommand("insertText", false, text);
+});
+
+function clearEditor() {
+  setValue(editor, "");
+  chrome.storage.session.remove(DRAFT_KEY);
+  editor.dataset.empty = "true";
+  saveBtn.disabled = true;
+}
 
 async function restoreSession() {
   const { [DRAFT_KEY]: draft, target: savedTarget } = await chrome.storage.session.get([DRAFT_KEY, "target"]);
-  if (draft) editor.value = draft;
+  if (draft) {
+    setValue(editor, draft);
+    editor.dataset.empty = String(draft === "");
+    saveBtn.disabled = draft.trim() === "";
+  }
   if (savedTarget) setTarget(savedTarget);
-  syncSaveBtn();
 }
 
 // ---- messaging ----
@@ -122,7 +148,7 @@ function localDate() {
 // ---- actions ----
 
 async function save() {
-  const text = editor.value.trim();
+  const text = editorText().trim();
   if (!text) return;
   saveBtn.disabled = true;
   setStatus(statusEl, target === "card" ? "正在保存卡片…" : "正在写入 Journal…");
@@ -134,13 +160,11 @@ async function save() {
   const res = await send(message);
 
   if (res.ok) {
-    editor.value = "";
-    chrome.storage.session.remove(DRAFT_KEY);
-    syncSaveBtn();
+    clearEditor();
     setStatus(statusEl, target === "card" ? "✅ 已保存为笔记卡片" : "✅ 已追加到今日 Journal", "success");
     return;
   }
-  syncSaveBtn();
+  saveBtn.disabled = editorText().trim() === "";
   if (res.authRequired) {
     showView(false);
     setStatus(connectStatusEl, "登录状态已过期，请重新连接");
@@ -163,15 +187,8 @@ async function connect() {
   }
 }
 
-async function disconnect() {
-  await send({ action: "disconnect" });
-  setStatus(connectStatusEl, "");
-  showView(false);
-}
-
 saveBtn.addEventListener("click", save);
 connectBtn.addEventListener("click", connect);
-disconnectBtn.addEventListener("click", disconnect);
 editor.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") save();
 });

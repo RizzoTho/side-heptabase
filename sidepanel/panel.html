@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <title>Heptabase Clipper</title>
+  <title>Side Heptabase</title>
   <link rel="stylesheet" href="panel.css" />
 </head>
 <body>
@@ -15,7 +15,7 @@
 
     <div id="editor-card">
       <div id="source-title" title="">…</div>
-      <textarea id="editor" placeholder="write in markdown…" spellcheck="false"></textarea>
+      <div id="editor" contenteditable="true" data-placeholder="write in markdown…" data-empty="true" spellcheck="false"></div>
     </div>
 
     <div id="send-row">
@@ -23,8 +23,6 @@
     </div>
 
     <div id="status" role="status"></div>
-
-    <button id="disconnect-btn" class="link-btn">断开连接</button>
   </div>
 
   <!-- re-auth mode: full-panel connect page -->

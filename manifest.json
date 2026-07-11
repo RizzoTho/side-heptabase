@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Heptabase Clipper",
-  "version": "0.1.0",
+  "name": "Side Heptabase",
+  "version": "0.2.0",
   "description": "Write a markdown note in the side panel and save it (with the current page link) to Heptabase.",
   "permissions": ["sidePanel", "tabs", "storage"],
   "host_permissions": ["https://api.heptabase.com/*"],
@@ -13,7 +13,7 @@
     "default_path": "sidepanel/panel.html"
   },
   "action": {
-    "default_title": "Heptabase Clipper"
+    "default_title": "Side Heptabase"
   },
   "icons": {
     "16": "icons/icon16.png",
