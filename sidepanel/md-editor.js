@@ -44,12 +44,12 @@ function pointAtTextOffset(line, requestedOffset) {
   const syntax = line.firstElementChild?.classList.contains("md-syntax")
     ? line.firstElementChild
     : null;
+  const content = line.querySelector(":scope > .md-content");
 
   // Keep the caret inside a real editable container after collapsed syntax.
   // Chrome cannot reliably type at a bare element boundary after a zero-width
   // non-editable span, especially when the heading has no visible text yet.
   if (syntax) {
-    const content = line.querySelector(":scope > .md-content");
     const visibleOffset = Math.max(0, offset - syntax.textContent.length);
     const text = content?.firstChild;
     if (text?.nodeType === Node.TEXT_NODE) {
@@ -57,6 +57,8 @@ function pointAtTextOffset(line, requestedOffset) {
     }
     if (content) return [content, 0];
   }
+
+  if (content?.firstElementChild?.tagName === "BR") return [content, 0];
 
   let consumed = 0;
   const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
@@ -97,17 +99,11 @@ function renderLine(line, text, cls, prefix) {
     line.appendChild(syntax);
   }
   const visibleText = text.slice(prefix.length);
-  if (prefix) {
-    const content = document.createElement("span");
-    content.className = "md-content";
-    if (visibleText) content.textContent = visibleText;
-    else content.appendChild(document.createElement("br"));
-    line.appendChild(content);
-  } else if (visibleText) {
-    line.appendChild(document.createTextNode(visibleText));
-  } else {
-    line.appendChild(document.createElement("br"));
-  }
+  const content = document.createElement("span");
+  content.className = "md-content";
+  if (visibleText) content.textContent = visibleText;
+  else content.appendChild(document.createElement("br"));
+  line.appendChild(content);
 }
 
 /** Chrome can type the first character of an empty editor as a bare text node. */
@@ -124,6 +120,11 @@ export function normalize(root) {
       sel.setBaseAndExtent(textNode, anchorOffset, textNode, focusOffset);
     }
   }
+  if (!root.firstChild) {
+    const line = document.createElement("div");
+    renderLine(line, "", "", "");
+    root.appendChild(line);
+  }
 }
 
 /**
@@ -133,6 +134,10 @@ export function normalize(root) {
  */
 export function bindEditorLifecycle(root, onSettled) {
   let composing = false;
+
+  // IME must have a stable text container before its first key event. Waiting
+  // for the first input to create this line interrupts Chromium composition.
+  normalize(root);
 
   const settle = () => {
     normalize(root);
