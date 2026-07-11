@@ -1,15 +1,27 @@
+const editorView = document.getElementById("editor-view");
+const connectView = document.getElementById("connect-view");
 const editor = document.getElementById("editor");
-const pageTitleEl = document.getElementById("page-title");
-const pageUrlEl = document.getElementById("page-url");
+const editorCard = document.getElementById("editor-card");
+const sourceTitleEl = document.getElementById("source-title");
+const tabButtons = [...document.querySelectorAll("#tabs .tab")];
 const saveBtn = document.getElementById("save-btn");
 const connectBtn = document.getElementById("connect-btn");
 const disconnectBtn = document.getElementById("disconnect-btn");
 const statusEl = document.getElementById("status");
+const connectStatusEl = document.getElementById("connect-status");
 
 const DRAFT_KEY = "draft";
 let currentTab = { title: "", url: "" };
+let target = "card"; // "card" | "journal"
 
-// ---- current tab tracking ----
+// ---- view switching ----
+
+function showView(connected) {
+  editorView.hidden = !connected;
+  connectView.hidden = connected;
+}
+
+// ---- current page tracking ----
 
 async function refreshTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -18,8 +30,8 @@ async function refreshTab() {
   } else {
     currentTab = { title: tab.title || tab.url, url: tab.url };
   }
-  pageTitleEl.textContent = currentTab.title || "（无页面）";
-  pageUrlEl.textContent = currentTab.url;
+  sourceTitleEl.textContent = currentTab.title || "（无页面）";
+  sourceTitleEl.title = currentTab.url;
 }
 
 chrome.tabs.onActivated.addListener(refreshTab);
@@ -27,15 +39,39 @@ chrome.tabs.onUpdated.addListener((_id, info) => {
   if (info.title || info.url || info.status === "complete") refreshTab();
 });
 
-// ---- draft persistence (survives panel close within the browser session) ----
+// ---- tabs (save target) ----
+
+function setTarget(next) {
+  target = next;
+  for (const btn of tabButtons) {
+    const active = btn.dataset.target === next;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-selected", String(active));
+  }
+  editorCard.classList.toggle("journal-active", next === "journal");
+  chrome.storage.session.set({ target: next });
+}
+
+for (const btn of tabButtons) {
+  btn.addEventListener("click", () => setTarget(btn.dataset.target));
+}
+
+// ---- draft persistence ----
+
+function syncSaveBtn() {
+  saveBtn.disabled = editor.value.trim() === "";
+}
 
 editor.addEventListener("input", () => {
   chrome.storage.session.set({ [DRAFT_KEY]: editor.value });
+  syncSaveBtn();
 });
 
-async function restoreDraft() {
-  const { [DRAFT_KEY]: draft } = await chrome.storage.session.get(DRAFT_KEY);
+async function restoreSession() {
+  const { [DRAFT_KEY]: draft, target: savedTarget } = await chrome.storage.session.get([DRAFT_KEY, "target"]);
   if (draft) editor.value = draft;
+  if (savedTarget) setTarget(savedTarget);
+  syncSaveBtn();
 }
 
 // ---- messaging ----
@@ -50,15 +86,9 @@ async function send(message) {
   }
 }
 
-function setStatus(text, kind = "") {
-  statusEl.textContent = text;
-  statusEl.className = kind;
-}
-
-function setConnectedUI(connected) {
-  saveBtn.hidden = !connected;
-  connectBtn.hidden = connected;
-  disconnectBtn.hidden = !connected;
+function setStatus(el, text, kind = "") {
+  el.textContent = text;
+  el.className = kind;
 }
 
 // ---- content assembly ----
@@ -72,7 +102,7 @@ function sourceLine() {
   return `Source: [${escapeMdText(currentTab.title || currentTab.url)}](${currentTab.url})`;
 }
 
-function buildContent(target, text) {
+function buildContent(text) {
   const src = sourceLine();
   if (target === "card") {
     const hasHeading = /^#\s/.test(text);
@@ -81,7 +111,6 @@ function buildContent(target, text) {
     if (src) parts.push(src);
     return parts.join("\n\n");
   }
-  // journal: no heading requirement
   return src ? `${text}\n\n${src}` : text;
 }
 
@@ -94,66 +123,63 @@ function localDate() {
 
 async function save() {
   const text = editor.value.trim();
-  if (!text) {
-    setStatus("笔记内容为空", "error");
-    return;
-  }
-  const target = document.querySelector('input[name="target"]:checked').value;
+  if (!text) return;
   saveBtn.disabled = true;
-  setStatus(target === "card" ? "正在保存卡片…" : "正在写入 Journal…");
+  setStatus(statusEl, target === "card" ? "正在保存卡片…" : "正在写入 Journal…");
 
   const message = target === "card"
-    ? { action: "saveNote", content: buildContent("card", text) }
-    : { action: "appendJournal", content: buildContent("journal", text), date: localDate() };
+    ? { action: "saveNote", content: buildContent(text) }
+    : { action: "appendJournal", content: buildContent(text), date: localDate() };
 
   const res = await send(message);
-  saveBtn.disabled = false;
 
   if (res.ok) {
     editor.value = "";
     chrome.storage.session.remove(DRAFT_KEY);
-    setStatus(target === "card" ? "✅ 已保存为笔记卡片" : "✅ 已追加到今日 Journal", "success");
+    syncSaveBtn();
+    setStatus(statusEl, target === "card" ? "✅ 已保存为笔记卡片" : "✅ 已追加到今日 Journal", "success");
     return;
   }
+  syncSaveBtn();
   if (res.authRequired) {
-    setConnectedUI(false);
-    setStatus("需要重新连接 Heptabase", "error");
+    showView(false);
+    setStatus(connectStatusEl, "登录状态已过期，请重新连接");
     return;
   }
-  setStatus(`保存失败：${res.error}`, "error");
+  setStatus(statusEl, `保存失败：${res.error}`, "error");
 }
 
 async function connect() {
   connectBtn.disabled = true;
-  setStatus("等待授权…");
+  setStatus(connectStatusEl, "已打开授权页，请在新标签页完成授权…");
   const res = await send({ action: "connect" });
   connectBtn.disabled = false;
   if (res.ok) {
-    setConnectedUI(true);
-    setStatus("✅ 已连接", "success");
+    setStatus(connectStatusEl, "");
+    setStatus(statusEl, "✅ 已连接", "success");
+    showView(true);
   } else {
-    setStatus(`连接失败：${res.error}`, "error");
+    setStatus(connectStatusEl, `连接失败：${res.error}`, "error");
   }
 }
 
 async function disconnect() {
   await send({ action: "disconnect" });
-  setConnectedUI(false);
-  setStatus("已断开连接");
+  setStatus(connectStatusEl, "");
+  showView(false);
 }
 
 saveBtn.addEventListener("click", save);
 connectBtn.addEventListener("click", connect);
 disconnectBtn.addEventListener("click", disconnect);
 editor.addEventListener("keydown", (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !saveBtn.hidden) save();
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") save();
 });
 
 // ---- init ----
 
 (async function init() {
-  await Promise.all([refreshTab(), restoreDraft()]);
+  await Promise.all([refreshTab(), restoreSession()]);
   const res = await send({ action: "status" });
-  setConnectedUI(Boolean(res.ok && res.data.connected));
-  if (!(res.ok && res.data.connected)) setStatus("首次使用请先连接 Heptabase");
+  showView(Boolean(res.ok && res.data.connected));
 })();

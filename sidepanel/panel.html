@@ -6,27 +6,37 @@
   <link rel="stylesheet" href="panel.css" />
 </head>
 <body>
-  <header id="page-info">
-    <div id="page-title">…</div>
-    <div id="page-url"></div>
-  </header>
+  <!-- normal mode: editor -->
+  <div id="editor-view" hidden>
+    <nav id="tabs" role="tablist">
+      <button class="tab active" role="tab" aria-selected="true" data-target="card">note card</button>
+      <button class="tab" role="tab" aria-selected="false" data-target="journal">journal</button>
+    </nav>
 
-  <main>
-    <textarea id="editor" placeholder="写点什么…（支持 Markdown）" spellcheck="false"></textarea>
-  </main>
+    <div id="editor-card">
+      <div id="source-title" title="">…</div>
+      <textarea id="editor" placeholder="write in markdown…" spellcheck="false"></textarea>
+    </div>
 
-  <footer>
-    <div id="target-switch" role="radiogroup" aria-label="保存目标">
-      <label><input type="radio" name="target" value="card" checked /><span>笔记卡片</span></label>
-      <label><input type="radio" name="target" value="journal" /><span>今日 Journal</span></label>
+    <div id="send-row">
+      <button id="save-btn" disabled>send</button>
     </div>
-    <div class="actions">
-      <button id="save-btn">保存到 Heptabase</button>
-      <button id="connect-btn" hidden>连接 Heptabase</button>
-    </div>
+
     <div id="status" role="status"></div>
-    <button id="disconnect-btn" class="link-btn" hidden>断开连接</button>
-  </footer>
+
+    <button id="disconnect-btn" class="link-btn">断开连接</button>
+  </div>
+
+  <!-- re-auth mode: full-panel connect page -->
+  <div id="connect-view" hidden>
+    <div class="connect-box">
+      <div class="connect-icon" aria-hidden="true">H</div>
+      <h2>连接 Heptabase</h2>
+      <p>授权后，你在这里写的笔记会连同当前页面链接一起保存到你的 Heptabase 知识库。</p>
+      <button id="connect-btn">连接 Heptabase</button>
+      <div id="connect-status" role="status"></div>
+    </div>
+  </div>
 
   <script type="module" src="panel.js"></script>
 </body>
