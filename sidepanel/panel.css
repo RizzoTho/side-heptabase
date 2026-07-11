@@ -178,15 +178,14 @@ body {
   max-width: 280px;
 }
 .connect-icon {
+  display: block;
   width: 56px;
   height: 56px;
   margin: 0 auto 16px;
-  border-radius: 14px;
-  background: #4f46e5;
-  color: #fff;
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 56px;
+}
+/* the icon is black-on-transparent; keep it visible on dark backgrounds */
+@media (prefers-color-scheme: dark) {
+  .connect-icon { filter: invert(1); }
 }
 .connect-box h2 {
   margin: 0 0 8px;
