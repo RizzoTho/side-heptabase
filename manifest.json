@@ -3,7 +3,7 @@
   "name": "Heptabase Clipper",
   "version": "0.1.0",
   "description": "Write a markdown note in the side panel and save it (with the current page link) to Heptabase.",
-  "permissions": ["sidePanel", "tabs", "identity", "storage"],
+  "permissions": ["sidePanel", "tabs", "storage"],
   "host_permissions": ["https://api.heptabase.com/*"],
   "background": {
     "service_worker": "background.js",

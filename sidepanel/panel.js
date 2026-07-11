@@ -40,8 +40,14 @@ async function restoreDraft() {
 
 // ---- messaging ----
 
-function send(message) {
-  return chrome.runtime.sendMessage(message);
+async function send(message) {
+  try {
+    const res = await chrome.runtime.sendMessage(message);
+    // undefined = the service worker died before responding
+    return res ?? { ok: false, error: "后台服务无响应，请重试" };
+  } catch (e) {
+    return { ok: false, error: e.message || String(e) };
+  }
 }
 
 function setStatus(text, kind = "") {
