@@ -1,3 +1,14 @@
 .DS_Store
 node_modules/
 .claude/
+
+# Local development context
+AGENT.md
+PROJECT_CONTEXT.md
+docs/
+tests/
+sidepanel/_dev.html
+
+# Chrome extension build/signing artifacts
+*.crx
+*.pem
