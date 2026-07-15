@@ -15,6 +15,11 @@ const DRAFT_KEY = "draft";
 let currentTab = { title: "", url: "" };
 let target = "card"; // "card" | "journal"
 
+function setSaveButtonState(state) {
+  saveBtn.dataset.state = state;
+  saveBtn.textContent = state === "sending" ? "Sending" : state === "sent" ? "Sent !" : "Send";
+}
+
 // ---- view switching ----
 
 function showView(connected) {
@@ -65,6 +70,7 @@ function editorText() {
 
 function syncEditorState() {
   const text = editorText();
+  setSaveButtonState("idle");
   saveBtn.disabled = text.trim() === "";
   editor.dataset.empty = String(text === "");
   chrome.storage.session.set({ [DRAFT_KEY]: text });
@@ -147,7 +153,8 @@ async function save() {
   const text = editorText().trim();
   if (!text) return;
   saveBtn.disabled = true;
-  setStatus(statusEl, target === "card" ? "正在保存卡片…" : "正在写入 Journal…");
+  setSaveButtonState("sending");
+  setStatus(statusEl, "");
 
   const message = target === "card"
     ? { action: "saveNote", content: buildContent(text) }
@@ -157,9 +164,10 @@ async function save() {
 
   if (res.ok) {
     clearEditor();
-    setStatus(statusEl, target === "card" ? "✅ 已保存为笔记卡片" : "✅ 已追加到今日 Journal", "success");
+    setSaveButtonState("sent");
     return;
   }
+  setSaveButtonState("idle");
   saveBtn.disabled = editorText().trim() === "";
   if (res.authRequired) {
     showView(false);
@@ -176,7 +184,6 @@ async function connect() {
   connectBtn.disabled = false;
   if (res.ok) {
     setStatus(connectStatusEl, "");
-    setStatus(statusEl, "✅ 已连接", "success");
     showView(true);
   } else {
     setStatus(connectStatusEl, `连接失败：${res.error}`, "error");
