@@ -18,6 +18,7 @@ let target = "card"; // "card" | "journal"
 function setSaveButtonState(state) {
   saveBtn.dataset.state = state;
   saveBtn.textContent = state === "sending" ? "Sending" : state === "sent" ? "Sent !" : "Send";
+  saveBtn.setAttribute("aria-busy", String(state === "sending"));
 }
 
 // ---- view switching ----
@@ -52,7 +53,7 @@ function setTarget(next) {
   for (const btn of tabButtons) {
     const active = btn.dataset.target === next;
     btn.classList.toggle("active", active);
-    btn.setAttribute("aria-selected", String(active));
+    btn.setAttribute("aria-pressed", String(active));
   }
   editorCard.classList.toggle("journal-active", next === "journal");
   chrome.storage.session.set({ target: next });
@@ -172,6 +173,7 @@ async function save() {
   if (res.authRequired) {
     showView(false);
     setStatus(connectStatusEl, "登录状态已过期，请重新连接");
+    connectBtn.focus();
     return;
   }
   setStatus(statusEl, `保存失败：${res.error}`, "error");
@@ -179,9 +181,11 @@ async function save() {
 
 async function connect() {
   connectBtn.disabled = true;
+  connectBtn.setAttribute("aria-busy", "true");
   setStatus(connectStatusEl, "已打开授权页，请在新标签页完成授权…");
   const res = await send({ action: "connect" });
   connectBtn.disabled = false;
+  connectBtn.setAttribute("aria-busy", "false");
   if (res.ok) {
     setStatus(connectStatusEl, "");
     showView(true);
@@ -199,7 +203,10 @@ editor.addEventListener("keydown", (e) => {
     syncEditorState();
     return;
   }
-  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") save();
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    e.preventDefault();
+    save();
+  }
 });
 
 // ---- init ----
