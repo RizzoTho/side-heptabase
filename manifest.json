@@ -1,14 +1,26 @@
 {
   "manifest_version": 3,
   "name": "Side Heptabase",
-  "version": "0.2.0",
-  "description": "Write a markdown note in the side panel and save it (with the current page link) to Heptabase.",
-  "permissions": ["sidePanel", "tabs", "storage"],
-  "host_permissions": ["https://api.heptabase.com/*"],
+  "version": "0.3.1",
+  "minimum_chrome_version": "116",
+  "description": "Capture notes, journal entries, links, and checklist items in Heptabase from a side panel or floating control.",
+  "permissions": ["sidePanel", "tabs", "storage", "clipboardWrite", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
+  "content_scripts": [{
+    "matches": ["http://*/*", "https://*/*"],
+    "exclude_matches": ["https://api.heptabase.com/*"],
+    "css": ["floating/editor-inline.css"],
+    "js": ["floating/icons.js", "floating/meta-icon.js", "floating/floating.js"],
+    "run_at": "document_idle"
+  }],
+  "web_accessible_resources": [{
+    "resources": ["floating/floating.css", "sidepanel/md-editor.js"],
+    "matches": ["http://*/*", "https://*/*"]
+  }],
   "side_panel": {
     "default_path": "sidepanel/panel.html"
   },

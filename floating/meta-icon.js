@@ -1,0 +1,2 @@
+// Icon A's H motif, adapted to the 14px Reicon BoldDuotone entry style.
+window.reicon['meta-custom'] = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><path d="M5.7 7.7v10.5M11.2 4.4v10.3M5.7 11.4h5.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/><path opacity="0.5" d="M16.5 10.4H20M14.8 14H20M11.2 17.8H20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';

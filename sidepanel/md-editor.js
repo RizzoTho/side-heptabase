@@ -177,7 +177,7 @@ export function refreshStyles(root) {
     const isFence = /^```/.test(text);
     let cls = "";
     if (isFence) {
-      cls = "md-code md-fence";
+      cls = inFence ? "md-code md-fence md-fence-close" : "md-code md-fence md-fence-open";
     } else if (inFence) {
       cls = "md-code";
     } else {
@@ -189,6 +189,55 @@ export function refreshStyles(root) {
     if (isFence) inFence = !inFence;
   }
   restoreSelection(root, saved);
+}
+
+/** Complete a typed fence and let Down leave the last code line. */
+export function handleCodeFenceKeys(root, event) {
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return false;
+  const sel = getSelection();
+  if (!sel?.isCollapsed) return false;
+  const line = directLine(root, sel.focusNode);
+  if (!line) return false;
+  const text = line.textContent.replace(/\n/g, "");
+
+  if (event.key === "Enter" && line.classList.contains("md-fence-open") && /^```[\w+#.-]*$/.test(text)) {
+    const caret = textOffset(line, sel.focusNode, sel.focusOffset);
+    if (caret !== text.length) return false;
+    for (let next = line.nextElementSibling; next; next = next.nextElementSibling) {
+      if (next.classList.contains("md-fence-close")) return false;
+      if (next.classList.contains("md-fence-open")) break;
+    }
+    event.preventDefault();
+    const opening = text === "```" ? "```text" : text;
+    const codeLine = document.createElement("div");
+    const closing = document.createElement("div");
+    const after = document.createElement("div");
+    renderLine(line, opening, "md-code md-fence md-fence-open", syntaxPrefix(opening, true));
+    renderLine(codeLine, "", "md-code", "");
+    renderLine(closing, "```", "md-code md-fence md-fence-close", "```");
+    renderLine(after, "", "", "");
+    line.after(codeLine, closing, after);
+    const index = Array.prototype.indexOf.call(root.children, codeLine);
+    restoreSelection(root, { anchorLine: index, anchorOffset: 0, focusLine: index, focusOffset: 0 });
+    return true;
+  }
+
+  if (event.key === "ArrowDown" && line.classList.contains("md-code") && !line.classList.contains("md-fence")) {
+    const closing = line.nextElementSibling;
+    if (!closing?.classList.contains("md-fence-close")) return false;
+    event.preventDefault();
+    let after = closing.nextElementSibling;
+    if (!after) {
+      after = document.createElement("div");
+      renderLine(after, "", "", "");
+      closing.after(after);
+    }
+    const index = Array.prototype.indexOf.call(root.children, after);
+    restoreSelection(root, { anchorLine: index, anchorOffset: 0, focusLine: index, focusOffset: 0 });
+    return true;
+  }
+
+  return false;
 }
 
 export function handleListEnter(root, event) {

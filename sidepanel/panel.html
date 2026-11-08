@@ -1,42 +1,42 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Side Heptabase</title>
   <link rel="stylesheet" href="panel.css" />
 </head>
 <body>
-  <!-- normal mode: editor -->
   <main id="editor-view" hidden aria-labelledby="editor-heading">
     <h1 id="editor-heading" class="sr-only">Capture a note</h1>
     <div id="tabs" role="group" aria-label="Save destination">
-      <button type="button" class="tab active" aria-pressed="true" data-target="card">Note Card</button>
-      <button type="button" class="tab" aria-pressed="false" data-target="journal">Journal</button>
+      <button type="button" class="tab active" aria-pressed="true" data-target="card"><span class="tab-icon" aria-hidden="true"></span><span>Note</span></button>
+      <button type="button" class="tab" aria-pressed="false" data-target="journal"><span class="tab-icon" aria-hidden="true"></span><span>Journal</span></button>
     </div>
 
     <section id="editor-card" aria-labelledby="source-title">
-      <div id="source-title" title="" aria-label="Current page">…</div>
+      <div class="source-row" aria-label="Current page">
+        <span class="source-icon" aria-hidden="true"></span>
+        <span class="source-copy"><span id="source-title" title="">…</span><span id="source-host"></span></span>
+      </div>
       <div id="editor" role="textbox" aria-label="Note content" aria-multiline="true" aria-placeholder="Write in Markdown…" aria-keyshortcuts="Control+Enter Meta+Enter" contenteditable="true" data-placeholder="Write in Markdown…" data-empty="true" spellcheck="false"></div>
+      <div id="send-row">
+        <div id="status" role="status" aria-live="polite"></div>
+        <button type="button" id="save-btn" data-state="idle" disabled aria-busy="false"><span class="save-label">Add</span><span class="save-glyph" aria-hidden="true"></span></button>
+      </div>
     </section>
-
-    <div id="send-row">
-      <button type="button" id="save-btn" disabled aria-busy="false">Send</button>
-    </div>
-
-    <div id="status" role="status" aria-live="polite"></div>
   </main>
 
-  <!-- re-auth mode: full-panel connect page -->
   <main id="connect-view" hidden aria-labelledby="connect-heading">
-    <div class="connect-box">
-      <img class="connect-icon" src="../icons/icon128.png" alt="" width="56" height="56" />
-      <h1 id="connect-heading">连接 Heptabase</h1>
-      <p>授权后，你在这里写的笔记会连同当前页面链接一起保存到你的 Heptabase 知识库。</p>
-      <button type="button" id="connect-btn" aria-busy="false">连接 Heptabase</button>
+    <div class="connect-box glass">
+      <span class="connect-icon" aria-hidden="true"></span>
+      <h1 id="connect-heading">Connect Heptabase</h1>
+      <button type="button" id="connect-btn" aria-busy="false">Connect</button>
       <div id="connect-status" role="status" aria-live="polite"></div>
     </div>
   </main>
 
+  <script src="../floating/icons.js"></script>
+  <script src="../floating/meta-icon.js"></script>
   <script type="module" src="panel.js"></script>
 </body>
 </html>
