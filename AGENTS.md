@@ -30,6 +30,10 @@ floating/floating.js      悬浮控制：dock、sheet、pin、关闭
 floating/floating.css     Shadow DOM 样式
 floating/editor-inline.css  编辑器样式，manifest CSS + scripting.insertCSS 双注入
 floating/icons.js         Reicon BoldDuotone 图标集（MIT）
+
+.github/workflows/release.yml  tag `v*` push 时跑测试、打包、发 Release
+scripts/package.sh        生成本地和 CI 共用的 release zip（dist/）
+scripts/verify-package.mjs 校验包内 manifest 引用与 JS import 图
 ```
 
 ## 必须保持的产品行为
@@ -64,6 +68,7 @@ floating/icons.js         Reicon BoldDuotone 图标集（MIT）
 - **编辑器**：起本地静态服务器打开 `tests/runtime-harness.html`（stub `chrome.*` 后加载真实 `panel.js` / `panel.css`），真实打字验证渲染和光标，别只看代码。
 - **扩展本体**：`chrome://extensions` 重载解压目录。涉及授权或真实保存的改动，让用户在自己浏览器里操作并回报结果。
 - **不做真实写入测试**。需要确认写入结果时只读回看，不要为了测试往用户 Heptabase 里写东西。
+- **打包**：`bash scripts/package.sh v<version>` 在本地复现 release 产物（`dist/side-heptabase-<tag>.zip`）。脚本强制 manifest version 与 tag 一致，并校验 manifest 引用的资源和 JS import 图都进了包；manifest 里没有的模块被删掉时会在这里失败。发布流程是 push `v*` tag，workflow 跑单测 → 打包 → 发 Release。
 - API 行为存疑时先写探针打真实端点（注册 → PKCE → `tools/call`），不要在插件里盲调。
 
 ## 提交

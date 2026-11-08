@@ -2,6 +2,8 @@
 
 English: [README.md](README.md)
 
+[![Latest release](https://img.shields.io/github/v/release/RizzoTho/side-heptabase)](https://github.com/RizzoTho/side-heptabase/releases/latest)
+
 <p align="center">
   <img src="assets/readme-hero.png" alt="Side Heptabase — 不离开页面就把内容写进 Heptabase">
 </p>
@@ -12,14 +14,18 @@ Side Heptabase 是一个非官方 Chrome 插件，通过 Heptabase 官方 MCP �
 
 ## 安装
 
-Side Heptabase 目前以 Chromium unpacked extension 运行，不需要构建，也没有 package 依赖；悬浮入口已在 Dia 中检查。
+Side Heptabase 通过 [Releases](https://github.com/RizzoTho/side-heptabase/releases/latest) 页面的 zip 分发。不需要构建，也没有 package 依赖，zip 里就是完整的插件；悬浮入口已在 Dia 中检查。
 
-1. 下载或 clone 本仓库。
+1. 从最新 Release 下载 `side-heptabase-vX.Y.Z.zip`，解压到一个长期保留的位置。
 2. 在 Chrome 打开 `chrome://extensions`，或在 Dia 打开 `dia://extensions`。
 3. 开启右上角的**开发者模式**。
-4. 点击**加载已解压的扩展程序**，选择本仓库目录。
+4. 点击**加载已解压的扩展程序**，选择解压出来的 `side-heptabase` 文件夹。
 5. 点击 Side Heptabase 插件图标，打开侧栏。
 6. 点击 **Connect**，在新标签页完成授权。
+
+Chrome 每次启动都会读这个文件夹，所以别删。更新时把新版本解压覆盖进去，然后在插件卡片上点**重新加载**；草稿和设置存在 Chrome storage 里，不会丢。移动文件夹或移除插件会改变 extension ID，需要重新授权 Heptabase。
+
+要改插件本身，就 clone 仓库，直接加载仓库目录。
 
 ## 使用
 
@@ -69,7 +75,7 @@ tests/        捕捉与草稿恢复的针对性测试
 
 ## 限制
 
-- 目前只能通过 Chrome 的**加载已解压的扩展程序**手动安装，尚未发布到 Chrome Web Store。
+- 手动通过 Chrome 的**加载已解压的扩展程序**安装：从 GitHub Releases 下载 zip 并加载解压出来的文件夹。尚未发布到 Chrome Web Store。
 - 目前支持纯 Markdown 文本，不支持文件或图片附件。
 - Todo 按钮会写入 Journal 清单；官方 MCP 暂不支持创建 Task App Todo。
 - 重新安装插件或移动仓库目录可能改变 extension ID，需要重新授权 Heptabase。

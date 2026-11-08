@@ -2,6 +2,8 @@
 
 中文说明: [README.zh.md](README.zh.md)
 
+[![Latest release](https://img.shields.io/github/v/release/RizzoTho/side-heptabase)](https://github.com/RizzoTho/side-heptabase/releases/latest)
+
 <p align="center">
   <img src="assets/readme-hero.png" alt="Side Heptabase — capture into Heptabase without leaving the page">
 </p>
@@ -12,14 +14,18 @@ Side Heptabase is an unofficial Chrome extension that writes through Heptabase's
 
 ## Install
 
-Side Heptabase currently runs as an unpacked Chromium extension. It has no build step or package dependencies. The floating control has been checked in Dia.
+Side Heptabase is distributed as a zip on the [releases page](https://github.com/RizzoTho/side-heptabase/releases/latest). It has no build step and no package dependencies, so the zip is the whole extension. The floating control has been checked in Dia.
 
-1. Download or clone this repository.
+1. Download `side-heptabase-vX.Y.Z.zip` from the latest release and unzip it to a permanent location.
 2. Open `chrome://extensions` in Chrome or `dia://extensions` in Dia.
 3. Turn on **Developer mode**.
-4. Click **Load unpacked** and select the repository folder.
+4. Click **Load unpacked** and select the unzipped `side-heptabase` folder.
 5. Click the Side Heptabase extension icon to open the side panel.
 6. Select **Connect** and finish authorization in the new tab.
+
+Chrome reads that folder every time the browser starts, so keep it. To update, unzip the newer release over it and click **Reload** on the extension card; drafts and settings survive because they live in Chrome storage. Moving the folder or removing the extension changes the extension ID and requires authorizing Heptabase again.
+
+To work on the extension itself, clone the repository and load the repository folder instead.
 
 ## Use
 
@@ -58,6 +64,8 @@ Side Heptabase is a community project and is not affiliated with or endorsed by 
 
 ```text
 assets/       README screenshots
+.github/      Release workflow that packages the zip on tag push
+scripts/      Packaging and package verification
 icons/        Extension and README logo assets
 lib/          OAuth and Heptabase MCP clients
 floating/     Page-level capture control, styles, and icons
@@ -69,7 +77,7 @@ tests/        Targeted capture and recovery checks
 
 ## Limitations
 
-- Installation is currently manual through Chrome's **Load unpacked** flow; there is no Chrome Web Store release.
+- Installation is manual through Chrome's **Load unpacked** flow: download the zip from GitHub Releases and load the unzipped folder. There is no Chrome Web Store release.
 - The extension supports plain Markdown text, not file or image attachments.
 - The Todo button writes a Journal checklist item because Heptabase MCP currently has no Task App Todo creation tool.
 - Reinstalling the extension or moving it to another folder may change its extension ID and require Heptabase authorization again.
