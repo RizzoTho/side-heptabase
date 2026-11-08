@@ -6,10 +6,16 @@ node_modules/
 *.key
 
 # Local development context
-AGENT.md
 PROJECT_CONTEXT.md
+.ryugi/
 docs/
 tests/
+!tests/
+tests/*
+!tests/background.test.mjs
+!tests/capture.test.mjs
+!tests/runtime-harness.html
+!tests/runtime-harness.js
 sidepanel/_dev.html
 
 # Chrome extension build/signing artifacts
