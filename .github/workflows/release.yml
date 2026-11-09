@@ -28,4 +28,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" dist/*.zip --title "$TAG" --generate-notes --verify-tag
+        run: |
+          gh release create "$TAG" dist/*.zip --title "$TAG" --generate-notes --verify-tag
+          # The generated notes are terse on the first release, and GitHub also
+          # attaches source archives that cannot be loaded as an extension.
+          install_note="**Download \`side-heptabase-$TAG.zip\`** and unzip it. Then open \`chrome://extensions\`, enable Developer mode, click Load unpacked, and pick the unzipped \`side-heptabase\` folder."
+          generated="$(gh release view "$TAG" --json body --jq .body)"
+          gh release edit "$TAG" --notes "$(printf '%s\n\n%s' "$install_note" "$generated")"
